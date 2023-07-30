@@ -26,11 +26,9 @@ we will see, depending on the criticism of the finding, how may I give you a rew
 
 ## Sneak peek
 
-The UI is silly and simple: just fields, nothing else. Colors are adapted to the color-scheme's device preference.
+The UI is silly and simple: just fields, nothing else.
 
-![UI is light when the user displays their device with a light color scheme.](./docs/light.png)
-
-![UI is dark when the user displays their device with a dark color scheme.](./docs/dark.png)
+![Interface.](./docs/dark.png)
 
 There are also some small user-side checks.
 
