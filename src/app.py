@@ -274,7 +274,7 @@ def api_changepasswd() -> Response:
     """Endpoint to change the passwd"""
     data = json.loads(request.json)
     username = str(data['username']) or ''
-    oldpasswd = str(data['oldpassword']) or ''
+    oldpasswd = str(data['password']) or ''
     passwd = str(data['newpassword']) or ''
     confirmpasswd = str(data['confirmpassword']) or ''
 
@@ -285,7 +285,7 @@ def api_changepasswd() -> Response:
         return api_client_error(APIClientErrorCode.INVALID_FIELDS)
 
     if len(username) < 1 or len(username) > 256 or \
-            SMB_USERNAME_VALIDATOR.match(username) is not None:
+            SMB_USERNAME_VALIDATOR.match(username) is None:
         return api_client_error(APIClientErrorCode.INVALID_FIELDS)
 
     if len(passwd) < 15 or len(passwd) > 127:
