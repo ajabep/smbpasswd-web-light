@@ -237,6 +237,12 @@ def robotstxt():
     )
 
 
+@app.get("/.well-known/change-password")
+def password_changer_redirector():
+    """https://w3c.github.io/webappsec-change-password-url/"""
+    return redirect(url_for('changepasswd'), code=302)
+
+
 @app.get("/.well-known/security.txt")
 def securitytxt():
     """Security.txt handler/generator"""
