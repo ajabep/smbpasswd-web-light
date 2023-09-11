@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
       - name: Analyze with SonarCloud
 
-        uses: SonarSource/sonarcloud-github-action@5875562561d22a34be0c657405578705a169af6c # v1.9.1
+        uses: SonarSource/sonarcloud-github-action@c25d2e7e3def96d0d1781000d3c429da22cd6252 # v2.0.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # Generate a token on Sonarcloud.io, add it to the secrets of this repo with the name SONAR_TOKEN (Settings > Secrets > Actions > add new repository secret)
