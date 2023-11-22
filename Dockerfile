@@ -21,6 +21,6 @@ USER appuser
 RUN poetry install
 
 EXPOSE 8080
-HEALTHCHECK --interval=1m --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "http://127.0.0.1:8080" ]
+HEALTHCHECK --interval=1m --timeout=30s --start-period=5s --retries=3 CMD curl -H 'Host: '"$HOST" http://127.0.0.1:8080 -f
 
 ENTRYPOINT [ "/entrypoint.sh" ]
