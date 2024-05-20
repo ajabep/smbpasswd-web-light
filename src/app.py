@@ -9,7 +9,6 @@ import argparse
 import enum
 import json
 import logging
-import os
 import pathlib
 import secrets
 import subprocess  # nosec: disable=B404
@@ -20,7 +19,8 @@ import typing
 import re
 
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask import Flask, Blueprint, request, Response, jsonify, render_template, abort, redirect, url_for
+from flask import Flask, Blueprint, request, Response, jsonify, render_template, abort, redirect
+from flask import url_for
 
 APP_DIR = pathlib.Path(__file__).absolute().parent
 DEFAULT_ADDRESS = '0.0.0.0'  # nosec: disable=104
@@ -323,7 +323,11 @@ def main():
         default=False,
         dest="devmode"
     )
-    parser.add_argument("--webpath", help="If behind a reverse proxy, is the path to use to access this service.", default="")
+    parser.add_argument(
+        "--webpath",
+        help="If behind a reverse proxy, is the path to use to access this service.",
+        default=""
+    )
     parser.add_argument("remote", help="Address of the remote SMB server")
     parser.add_argument("hostname", help="The hostname that requests are supposed to use")
 
