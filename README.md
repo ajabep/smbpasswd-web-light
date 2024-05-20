@@ -56,6 +56,7 @@ To install this software, you have to use the container. To install the containe
 	- `REMOTE`: (string; an IP or a domain name) The address of the remote SMB server;
 	- `HOST`: (string; an IP or a domain name) The hostname that requests are supposed to use. Add the port number
 	  is not standard;
+	- `WEBPATH`: (string; a path) The Path to use to access this service (in case it's behind a reverse proxy);
 	- `VERBOSE`: (Optional; positive integer) When used, the logs will be verbose;
     - `DO_NOT_VERIFY_REVERSE_PROXY`: (Optional; string) When the string is `The reverse proxy send X-Forwarded-For and
 	  X-Forwarded-Host headers`, the launch script will not verify if the reverse proxy putted in front of this app is
@@ -64,7 +65,7 @@ To install this software, you have to use the container. To install the containe
 	- `UNSAFE_DEVELOPMENT_MODE`: (Optional; string) **UNSAFE** to use only when you are developing. If the value is not
 	  the right one (embedded in the entrypoint file ; case-sensitive), the dev mode will not be enabled. Please, make
 	  sure this is used only in a development network and computer. This will only make this container more weak and
-	  vulnerable. If you want to have some verbose log, use the `VERBOSE` variable. This option is **UNSAFE**. Do 
+	  vulnerable. If you want to have some verbose log, use the `VERBOSE` variable. This option is **UNSAFE**. Do
       **NOT** use it.
 4. You HAVE to put this server BEHIND a reverse-proxy. For more info, refer to the
    [Flask documentation](https://flask.palletsprojects.com/en/2.3.x/deploying/). Your reverse proxy **HAVE** to set the

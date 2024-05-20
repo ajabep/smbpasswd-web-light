@@ -51,10 +51,16 @@ else
 		tmpfile="$(mktemp)"
 		printf 'HTTP/1.1 200 OK\n\n\n' | nc -lvp 8080 >"$tmpfile" &
 		echo "Testing the reverse proxy"
-		curl -k https://"$HOST" || rage_quit "We cannot verify the reverse proxy: curl exited with code $?. Quitting"
+		curl -k https://"$HOST/$WEBPATH" || rage_quit "We cannot verify the reverse proxy: curl exited with code $?. Quitting"
 		grep -q 'X-Forwarded-For:' "$tmpfile" || rage_quit "It seems that the reverse proxy is not proper configured: can't find X-Forwarded-For in the request!"
 		grep -q 'X-Forwarded-Host:' "$tmpfile" || rage_quit "It seems that the reverse proxy is not proper configured: can't find X-Forwarded-Host in the request!"
 	fi
+fi
+
+
+if [ "X$WEBPATH" != "X" ]
+then
+	set -- "$@" --webpath "$WEBPATH"
 fi
 
 set -- "$@" "$REMOTE" "$HOST"

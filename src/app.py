@@ -10,6 +10,7 @@ import enum
 import json
 import logging
 import os
+import pathlib
 import secrets
 import subprocess  # nosec: disable=B404
 import sys
@@ -19,15 +20,16 @@ import typing
 import re
 
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask import Flask, request, Response, jsonify, render_template, abort, redirect, url_for
+from flask import Flask, Blueprint, request, Response, jsonify, render_template, abort, redirect, url_for
 
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = pathlib.Path(__file__).absolute().parent
 DEFAULT_ADDRESS = '0.0.0.0'  # nosec: disable=104
 DEFAULT_PORT = 8080
 DEFAULT_PROTO = 'http'
+CONFIG = {}
 
-app = Flask(__name__)
-app.secret_key = secrets.token_hex()
+bp = Blueprint('app', __name__)
+
 
 SMB_USERNAME_VALIDATOR = re.compile('^[a-zA-Z0-9]{1,256}$')
 
@@ -99,7 +101,7 @@ def smbpasswd(username: str, old_password: str, new_password: str) \
         executable,
         "-s",
         "-r",
-        app.config['REMOTE_ADDR'],
+        CONFIG['REMOTE_ADDR'],
         "-U",
         username
     ]
@@ -166,7 +168,7 @@ def smbpasswd(username: str, old_password: str, new_password: str) \
         return APIServerErrorCode.UNKNOWN_ERROR
 
 
-@app.context_processor
+@bp.context_processor
 def inject_data() -> dict:
     """Inject global variables in templates"""
     return {
@@ -179,16 +181,16 @@ def inject_data() -> dict:
     }
 
 
-@app.before_request
+@bp.before_request
 def force_hostname():
     """Force the usage of the right hostname"""
-    if request.host != app.config['HOSTNAME']:
+    if request.host != CONFIG['HOSTNAME']:
         logging.warning("Just seen a request asking for '%s', expecting the hostname '%s'",
-                        request.host, app.config['HOSTNAME'])
+                        request.host, CONFIG['HOSTNAME'])
         abort(404)
 
 
-@app.after_request
+@bp.after_request
 def security_headers(response: Response) -> Response:
     """Setup some security headers if not already present"""
     # pylint: disable=line-too-long
@@ -220,7 +222,7 @@ def security_headers(response: Response) -> Response:
     return response
 
 
-@app.get("/robots.txt")
+@bp.get("/robots.txt")
 def robotstxt():
     """Robots.txt handler/generator"""
     return Response(
@@ -237,13 +239,13 @@ def robotstxt():
     )
 
 
-@app.get("/.well-known/change-password")
+@bp.get("/.well-known/change-password")
 def password_changer_redirector():
     """https://w3c.github.io/webappsec-change-password-url/"""
-    return redirect(url_for('changepasswd'), code=302)
+    return redirect(url_for('app.changepasswd'), code=302)
 
 
-@app.get("/.well-known/security.txt")
+@bp.get("/.well-known/security.txt")
 def securitytxt():
     """Security.txt handler/generator"""
     return Response(
@@ -261,21 +263,21 @@ def securitytxt():
     )
 
 
-@app.get("/")
+@bp.get("/")
 def index() -> Response:
     """List of services"""
     # While we don't have any other service, redirect users to the only one
-    return redirect(url_for('changepasswd'), code=302)
+    return redirect(url_for('app.changepasswd'), code=302)
     # return render_template('index.html')
 
 
-@app.get("/change-password")
+@bp.get("/change-password")
 def changepasswd() -> str:
     """Form to change the passwd"""
     return render_template('change_passwd.html')
 
 
-@app.post('/api/changepasswd')
+@bp.post('/api/changepasswd')
 def api_changepasswd() -> Response:
     """Endpoint to change the passwd"""
     data = json.loads(request.json)
@@ -321,6 +323,7 @@ def main():
         default=False,
         dest="devmode"
     )
+    parser.add_argument("--webpath", help="If behind a reverse proxy, is the path to use to access this service.", default="")
     parser.add_argument("remote", help="Address of the remote SMB server")
     parser.add_argument("hostname", help="The hostname that requests are supposed to use")
 
@@ -335,16 +338,29 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO)
 
-    app.config['REMOTE_ADDR'] = args.remote
-    app.config['HOSTNAME'] = args.hostname
+    CONFIG['REMOTE_ADDR'] = args.remote
+    CONFIG['HOSTNAME'] = args.hostname
 
-    logging.info("Listening on: %s://%s:%s/", DEFAULT_PROTO, DEFAULT_ADDRESS, DEFAULT_PORT)
+    webpath = args.webpath.replace('\\', '/')
+    webpath = '/' + webpath.strip('/')
+
+    app = Flask(
+        __name__,
+        static_folder = APP_DIR / 'static',
+        static_url_path = webpath + '/static/'
+    )
+    bp.static_folder = 'static'
+    bp.static_url_path = webpath + '/static/'
+    app.secret_key = secrets.token_hex()
+    app.register_blueprint(bp, url_prefix=webpath)
+
+    logging.info("Listening on: %s://%s:%s", DEFAULT_PROTO, DEFAULT_ADDRESS, DEFAULT_PORT)
     if args.url is not None:
         logging.info("If your redirection works correctly, it should be available using: %s",
                      args.url)
 
     if args.devmode:
-        app.config['DEVMODE'] = True
+        CONFIG['DEVMODE'] = True
         app.run(
             debug=args.verbose >= 1,
             host=DEFAULT_ADDRESS,
@@ -354,14 +370,14 @@ def main():
         app.wsgi_app = ProxyFix(
             app.wsgi_app, x_for=1, x_host=1
         )
+    return app
 
 
 def create_app(argv) -> Flask:
     """Create the right app object for WSGI server, and transforms the CLI arguments given as an
     argument to sys.argv"""
     sys.argv = argv.split(' ')
-    main()
-    return app
+    return main()
 
 
 if __name__ == "__main__":

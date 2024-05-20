@@ -16,7 +16,7 @@
 		{% block content %}
 			<nav class="navbar navbar-expand-lg bg-body-tertiary">
 				<div class="container">
-					<{% if current_page == 'index' %}span{% else %}a href="{{ url_for('index') }}"{% endif %} class="navbar-brand" aria-hidden="true">
+					<{% if current_page == 'index' %}span{% else %}a href="{{ url_for('app.index') }}"{% endif %} class="navbar-brand" aria-hidden="true">
 						<i class="bi bi-file-earmark-person"></i>
 					</{% if current_page == 'index' %}span{% else %}a{% endif %}>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
