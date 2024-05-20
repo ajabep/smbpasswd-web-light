@@ -7,7 +7,7 @@ WORKDIR /app
 RUN apk add --update --no-cache samba-common-tools~4.18 \
                                 python3~3.11 \
                                 curl~8 \
-                                poetry~1.4 \
+                                poetry~1.7 \
                                 samba-common~4.18 \
  && chown root:root /app \
  && mkdir /app/home \
