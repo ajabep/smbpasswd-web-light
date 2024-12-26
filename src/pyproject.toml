@@ -8,7 +8,7 @@ readme = "README.md"
 #packages = [{include = "."}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 flask = "^3.0.3"
 gunicorn = "^23.0.0"
 
