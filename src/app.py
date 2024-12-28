@@ -93,6 +93,11 @@ def api_server_error(error_code: APIServerErrorCode) -> Response:
     )
 
 
+def escape_to_log(s: str) -> str:
+    """Escape a user-controlled string to be suitable for the logs"""
+    return s.replace('\\','\\\\').replace('\r','\\r').replace('\n','\\n')
+
+
 def smbpasswd(username: str, old_password: str, new_password: str) \
         -> typing.Optional[APIServerErrorCode]:
     """Instantiate smbpasswd"""
@@ -111,8 +116,9 @@ def smbpasswd(username: str, old_password: str, new_password: str) \
         new_password
     ]
 
+
     try:
-        logging.debug("Will execute '%s'", "' '".join(command))
+        logging.debug("Will execute '%s'", escape_to_log("' '".join(command)))
         with subprocess.Popen(
             command,
             executable=executable,
@@ -126,12 +132,12 @@ def smbpasswd(username: str, old_password: str, new_password: str) \
                 input=('\n'.join(input_param) + '\n').encode('ascii'),
                 timeout=60
             )
-            logging.debug("Return code for user %s = %s", username, proc.returncode)
-            logging.debug("Stdout for user %s = %s", username, stdout)
-            logging.debug("Stderr for user %s = %s", username, stderr)
+            logging.debug("Return code for user %s = %s", escape_to_log(username), proc.returncode)
+            logging.debug("Stdout for user %s = %s", escape_to_log(username), stdout)
+            logging.debug("Stderr for user %s = %s", escape_to_log(username), stderr)
 
             if proc.returncode == 0:
-                logging.info("Return code for user %s = 0 ; SUCCESS!", username)
+                logging.info("Return code for user %s = 0 ; SUCCESS!", escape_to_log(username))
                 return None
 
             stderr = stderr.strip()
@@ -154,14 +160,14 @@ def smbpasswd(username: str, old_password: str, new_password: str) \
 
     except TimeoutError:
         proc.kill()
-        logging.info("Timeout for user %s", username)
-        logging.debug("Return code for user %s = %s", username, proc.returncode)
+        logging.info("Timeout for user %s", escape_to_log(username))
+        logging.debug("Return code for user %s = %s", escape_to_log(username), proc.returncode)
         return APIServerErrorCode.TIMEOUT
 
     except subprocess.SubprocessError:
         logging.error(
             "Unknown error during changing password for user %s : %s",
-            username,
+            escape_to_log(username),
             '\n'.join(traceback.format_exc())
         )
         traceback.print_exc(file=sys.stderr)
@@ -299,7 +305,7 @@ def api_changepasswd() -> Response:
     if len(passwd) < 15 or len(passwd) > 127:
         return api_client_error(APIClientErrorCode.INVALID_FIELDS)
 
-    logging.info("Trying to change the password of %s", username)
+    logging.info("Trying to change the password of %s", escape_to_log(username))
 
     ret_code = smbpasswd(username, oldpasswd, passwd)
     if ret_code is None:
