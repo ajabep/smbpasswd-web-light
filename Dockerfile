@@ -4,11 +4,11 @@ COPY --chown=root:root ./src/ /app/
 COPY --chown=root:root ./docker/entrypoint.sh /
 WORKDIR /app
 
-RUN apk add --update --no-cache samba-common-tools~4.20 \
-                                python3~3.12 \
-                                curl~8 \
-                                poetry~1.8 \
-                                samba-common~4.20 \
+RUN apk add --update --no-cache samba-common-tools=4.20.6-r1 \
+                                python3=3.12.8-r1 \
+                                curl=8.11.1-r0 \
+                                poetry=1.8.4-r0 \
+                                samba-common=4.20.6-r1 \
  && chown root:root /app \
  && mkdir /app/home \
  && adduser -S -D -H -h /app/home appuser \
