@@ -33,4 +33,4 @@ jobs:
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Bandit Scan
-        uses: PyCQA/bandit-action@8a1b30610f61f3f792fe7556e888c9d7dffa52de # v1.0.0
+        uses: PyCQA/bandit-action@67a458d90fa11fb1463e91e7f4c8f068b5863c7f # v1.0.1
